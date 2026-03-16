@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta lang="en">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+<title>Listening Style Quiz</title>
+<style>
+    .checkContainer {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+    }
+    
+    :root {
+        --AIMblue: #4353A3;
+        --darkBlue: #38416D;
+        --teal: #5DC8B9;
+        --cream: #F1EEDE;
+        --grey: #e7e9ec;
+        --rust: #AF4510;
+        --navy: #12195C;
+        --white: #ffffff;
+        --lightBlue: #AEBAE4;
+    }
+
+    body {
+        font-family: "IBM Plex Sans", sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .quiz-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #F1EEDE30;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .slide-container {
+        padding: 30px;
+        padding-top: 15px;
+    }
+
+    .slide {
+        display: none;
+        width: 100%;
+    }
+
+    .slide.active {
+        display: block;
+    }
+
+    .slide h3 {
+        color: var(--AIMblue);
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    fieldset {
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .checkContainer {
+        display: flex;
+        align-items: flex-start;
+        margin: 20px 0;
+        padding: 15px;
+        background-color: var(--grey);
+        border-radius: 8px;
+    }
+
+    .instructions {
+        display: flex;
+        padding-left: 30px;
+    }
+
+    .checkContainer p {
+        margin: 0;
+        margin-right: 15px;
+        flex-grow: 1;
+        font-size: 16px;
+        line-height: 1.4;
+    }
+
+    input[type="radio"] {
+        margin: 0 10px;
+        transform: scale(1.2);
+        cursor: pointer;
+    }
+
+    input[type="number"] {
+        margin: 0 10px;
+    }
+    .navigation {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 20px 30px;
+        background-color: var(--grey);
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-button {
+        width: 40px;
+        height: 40px;
+        border: 2px solid var(--AIMblue);
+        background-color: var(--white);
+        color: var(--AIMblue);
+        border-radius: 50%;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .nav-button:hover {
+        background-color: var(--lightBlue);
+    }
+
+    .nav-button.active {
+        background-color: var(--AIMblue);
+        color: var(--white);
+    }
+
+    .arrow-button {
+        padding: 10px 20px;
+        background-color: #5DC8B990;
+        color: black;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    .arrow-button:hover:not(:disabled) {
+        background-color: var(--darkBlue);
+        color: white;
+    }
+
+    .arrow-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .submit-button {
+        padding: 15px 30px;
+        background-color: var(--teal);
+        color: var(--white);
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 20px auto;
+    }
+
+    .submit-button:hover {
+        background-color: #4db5a5;
+    }
+
+    .submit-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    #results {
+        max-width: 800px;
+        margin: 15px auto;
+        background-color: var(--cream);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: none;
+        padding: 20px;
+    }
+
+    .progress-bar {
+        height: 6px;
+        background-color: var(--grey);
+        margin: 0 30px 20px;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background-color: var(--teal);
+        transition: width 0.3s ease;
+        width: 10%;
+    }
+
+    .canvasCard {
+  width: 500px;
+  max-width: 100%;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+
+    @media screen and (max-width: 600px) {
+        .quiz-container {
+            margin: 0;
+        }
+
+        .slide-container,
+        .navigation,
+        .instructions {
+            padding: 15px;
+        }
+
+        .nav-buttons {
+            gap: 5px;
+        }
+
+        .nav-button {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+
+        .arrow-button {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="quiz-container">
+        <nav class="navigation" aria-label="Quiz navigation">
+            <div class="nav-buttons" role="tablist">
+                <button class="nav-button active" onclick="goToSlide(1)" role="tab" aria-selected="true" aria-controls="slide-1" id="tab-1" aria-label="Question 1">1</button>
+                <button class="nav-button" onclick="goToSlide(2)" role="tab" aria-selected="false" aria-controls="slide-2" id="tab-2" aria-label="Question 2">2</button>
+                <button class="nav-button" onclick="goToSlide(3)" role="tab" aria-selected="false" aria-controls="slide-3" id="tab-3" aria-label="Question 3">3</button>
+                <button class="nav-button" onclick="goToSlide(4)" role="tab" aria-selected="false" aria-controls="slide-4" id="tab-4" aria-label="Question 4">4</button>
+                <button class="nav-button" onclick="goToSlide(5)" role="tab" aria-selected="false" aria-controls="slide-5" id="tab-5" aria-label="Question 5">5</button>
+                <button class="nav-button" onclick="goToSlide(6)" role="tab" aria-selected="false" aria-controls="slide-6" id="tab-6" aria-label="Question 6">6</button>
+                <button class="nav-button" onclick="goToSlide(7)" role="tab" aria-selected="false" aria-controls="slide-7" id="tab-7" aria-label="Question 7">7</button>
+                <button class="nav-button" onclick="goToSlide(8)" role="tab" aria-selected="false" aria-controls="slide-8" id="tab-8" aria-label="Question 8">8</button>
+                <button class="nav-button" onclick="goToSlide(9)" role="tab" aria-selected="false" aria-controls="slide-9" id="tab-9" aria-label="Question 9">9</button>
+                <button class="nav-button" onclick="goToSlide(10)" role="tab" aria-selected="false" aria-controls="slide-10" id="tab-10" aria-label="Question 10">10</button>
+            </div>
+        </nav>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" role="progressbar"></div>
+        </div>
+        <form name="q1" onsubmit="return false" onchange="updateSubmitButton()">
+            <div class="slide-container" id="slideContainer" role="region" aria-live="polite">
+                <!-- Slide 1 -->
+                <fieldset class="slide active" id="slide-1" role="tabpanel" aria-labelledby="tab-1">
+                    <legend>
+                        <h3>When someone starts explaining a problem to you, your first instinct is to:</h3>
+                    </legend>
+                    
+                    <div class="checkContainer">
+                        <p>
+                            <label for="q1-a">Help them define what needs to be done and move toward a solution</label>
+                        </p>
+                        <input type="range" id="q1-a1" name="question1" value="a1" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+            
+                        <input type="number" id="q1-a2" name="question1" value="a2" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+                    </div>
+                    
+                    <div class="checkContainer">
+                        <p>
+                            <label for="q1-b">Ask clarifying questions to fully understand the situation</label>
+                        </p>
+                        <input type="number" id="q1-b1" name="question1" value="b1" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+                        <input type="number" id="q1-b2" name="question1" value="b2" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+                    </div>
+                    
+                    <div class="checkContainer">
+                        <p>
+                            <label for="q1-c">Focus on how the situation is affecting them personally</label>
+                        </p>
+                        <input type="number" id="q1-c1" name="question1" value="c1" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+                        <input type="number" id="q1-c2" name="question1" value="c2" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+                    </div>
+            
+                    <div class="checkContainer">
+                        <p>
+                            <label for="q1-d">Question whether the problem is being framed correctly</label>
+                        </p>
+                        <input type="number" id="q1-d1" name="question1" value="d1" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+                        <input type="number" id="q1-d2" name="question1" value="d2" autocomplete="off" placeholder="25" min="0" max="100" step="10">
+                    </div>
+
+
+    
+                    <button class="submit-button" id="submitButton" onclick="formOne();" aria-label="Submit quiz and view results">
+                        Submit & View Results
+                    </button>
+
+     <div class="resultsGroup">
+      <p id="results" aria-live="polite"></p>
+    </div>
+                </fieldset>
+            </div>
+        </form>
+    </div>
+
+    <!-- Results Display -->
+    <div id="results" role="region" aria-live="polite" aria-label="Quiz results"></div>
+
+<script>
+var labels = ["A count", "B count", "C count", "D count"];
+let yValues = [0, 0, 0, 0];
+var barColors = [
+  "#5DC8B9",
+  "#AF4510",
+  "#12195C",
+  "#C28C82"
+];
+
+const chart = new Chart("communicationStyle", {
+  type: "radar",
+  data: {
+    labels,
+    datasets: [{
+         backgroundColor: 'rgba(255, 99, 132, 0.5)', // Example background color
+            borderColor: 'rgb(255, 99, 132)', // Example border color
+            borderWidth: 1,
+      data: yValues,
+      label: 'Values',
+    }],
+  },
+  options: {
+        scales: {
+            r: { // Configure the radial scale
+                angleLines: {
+                    display: true
+                },
+                suggestedMin: 0, // Set appropriate min/max for your data
+                suggestedMax: 100
+            }
+        },
+        plugins: {
+            legend: {
+                display: true // Show the legend, as radar charts can have multiple datasets
+            }
+        }
+        // Radar charts support different options for point interaction, point style, etc.
+    }
+});
+
+function formOne() {
+    //function is a fake form - grab the values of all the IDs, i need to chain the a1-d1s together so the max can't be more than 100 via event listener,should also then grab those values as a groups and find the average
+    const form = document.forms['q1'];
+
+    let aCount = 0;
+    let bCount = 0;
+    let cCount = 0;
+    let dCount = 0;
+    for (let i = 1; i <=6; i++) {
+        const question = form.elements[`question${i}`];
+        if (question && question.value) {
+            if (question.value === 'a1') aCount++;
+            else if (question.value === 'q1-a2') bCount++;
+            else if (question.value === 'q1-b1') cCount++;
+            else if (question.value === 'q1-b2') dCount++;
+            else if (question.value === 'q1-c1') dCount++;
+        }
+    }
+    
+    const results = document.getElementById("results");
+    results.style.display = "block";
+    
+    let maxCount = Math.max(aCount, bCount, cCount, dCount);
+    
+    // Check for ties
+    const tiedItems = [];
+    if (aCount === maxCount) tiedItems.push('a');
+    if (bCount === maxCount) tiedItems.push('b');
+    if (cCount === maxCount) tiedItems.push('c');
+    if (dCount === maxCount) tiedItems.push('d');
+    
+    // Style descriptions
+    const styles = {
+        'a': {
+            title: 'Task-Oriented Listener',
+            description: '<strong>Core focus:</strong> Efficiency, outcomes and next steps. <br><strong>How you listen:</strong> You listen with the goal of identifying what needs to be done. You naturally steer conversations toward decisions, solutions and next steps, often summarising or redirecting when discussions feel unfocused.'
+        },
+        'b': {
+            title: 'Analytical Listener',
+            description: '<strong>Core focus:</strong> Understanding, logic and accuracy.  <br><strong>How you listen:</strong> You listen to make sense of information. You ask clarifying questions, seek evidence and want a complete picture before forming conclusions.'
+        },
+        'c': {
+            title: 'Relational Listener',
+            description: '<strong>Core focus:</strong> Connection, empathy and understanding people.  <br><strong>How you listen:</strong> You listen to understand the person, not just the message. You pay attention to emotions, tone and non-verbal cues, aiming to make others feel heard and supported.'
+        },
+        'd': {
+            title: 'Critical Listener',
+            description: '<strong>Core focus:</strong> Evaluation, accuracy and validity.  <br><strong>How you listen:</strong> You listen to judge the quality of what is being said. You assess logic, assumptions, bias and credibility, often questioning ideas before accepting them.'
+        }
+    };
+    
+    if (maxCount < 2) {
+        results.innerHTML = `<h2>Incomplete Quiz</h2><p>Please complete the quiz before submitting. Make sure you've answered all questions.</p>`;
+    }
+    else if (tiedItems.length > 1) {
+        let tieHTML = '<h2>Mixed Listening Style</h2><p>You have a balanced approach across multiple listening styles:</p>';
+        tiedItems.forEach(item => {
+            tieHTML += `<h3>${styles[item].title}</h3><p>${styles[item].description}</p>`;
+        });
+        results.innerHTML = tieHTML;
+    }
+    else if (maxCount === aCount) {
+        results.innerHTML = `<h2>${styles['a'].title}</h2><p>${styles['a'].description}</p>`;
+    }
+    else if (maxCount === bCount) {
+        results.innerHTML = `<h2>${styles['b'].title}</h2><p>${styles['b'].description}</p>`;
+    }
+    else if (maxCount === cCount) {
+        results.innerHTML = `<h2>${styles['c'].title}</h2><p>${styles['c'].description}</p>`;
+    }
+    else {
+        results.innerHTML = `<h2>${styles['d'].title}</h2><p>${styles['d'].description}</p>`;
+    }
+    
+    results.scrollIntoView({ behavior: 'smooth' });
+yValues.splice(0, 1, aCount);
+yValues.splice(1, 1, bCount);
+yValues.splice(2, 1, cCount);
+yValues.splice(3, 1, dCount);
+console.log(aCount, bCount, cCount, dCount);
+console.log(yValues);
+chart.update(); 
+}
+
+
+document.addEventListener('keydown', function(event) {
+    if (event.target.tagName === 'INPUT') {
+        // Prevent Enter key from submitting the form
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            return;
+        }
+        return;
+    }
+    
+    if (event.key === 'ArrowLeft') {
+        event.preventDefault();
+        previousSlide();
+    } else if (event.key === 'ArrowRight') {
+        event.preventDefault();
+        nextSlide();
+    }
+});
+</script>
+</body>
+</html>

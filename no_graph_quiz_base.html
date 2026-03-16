@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta lang="en">
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
+<title>Listening Style Quiz</title>
+<style>
+    :root {
+        --AIMblue: #4353A3;
+        --darkBlue: #38416D;
+        --teal: #5DC8B9;
+        --cream: #F1EEDE;
+        --grey: #e7e9ec;
+        --rust: #AF4510;
+        --navy: #12195C;
+        --white: #ffffff;
+        --lightBlue: #AEBAE4;
+    }
+
+    body {
+        font-family: "IBM Plex Sans", sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .quiz-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background-color: #F1EEDE30;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .slide-container {
+        padding: 30px;
+        padding-top: 15px;
+    }
+
+    .slide {
+        display: none;
+        width: 100%;
+    }
+
+    .slide.active {
+        display: block;
+    }
+
+    .slide h3 {
+        color: var(--AIMblue);
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    fieldset {
+        border: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .question-columns {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 20px;
+    }
+
+    .column {
+        padding: 20px;
+        background-color: var(--grey);
+        border-radius: 8px;
+    }
+
+    .column h4 {
+        color: var(--AIMblue);
+        margin-top: 0;
+        text-align: center;
+    }
+
+    .option-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 12px 0;
+        padding: 8px 0;
+    }
+
+    .option-row label {
+        font-size: 14px;
+        flex: 1;
+        margin-right: 15px;
+    }
+
+    .option-row input {
+        width: 70px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+
+    .column-total {
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 2px solid var(--AIMblue);
+        font-weight: bold;
+        text-align: center;
+        color: var(--AIMblue);
+    }
+
+    .column-total.invalid {
+        color: #d32f2f;
+    }
+
+    .navigation {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        padding: 20px 30px;
+        background-color: var(--grey);
+    }
+
+    .nav-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-button {
+        width: 40px;
+        height: 40px;
+        border: 2px solid var(--AIMblue);
+        background-color: var(--white);
+        color: var(--AIMblue);
+        border-radius: 50%;
+        cursor: pointer;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+    .nav-button:hover {
+        background-color: var(--lightBlue);
+    }
+
+    .nav-button.active {
+        background-color: var(--AIMblue);
+        color: var(--white);
+    }
+
+    .arrow-button {
+        padding: 10px 20px;
+        background-color: #5DC8B990;
+        color: black;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+
+    .arrow-button:hover:not(:disabled) {
+        background-color: var(--darkBlue);
+        color: white;
+    }
+
+    .arrow-button:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+    }
+
+    .submit-button {
+        padding: 15px 30px;
+        background-color: var(--teal);
+        color: var(--white);
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 20px auto;
+        display: none;
+    }
+
+    .submit-button:hover {
+        background-color: #4db5a5;
+    }
+
+    #results {
+        max-width: 800px;
+        margin: 15px auto;
+        background-color: var(--cream);
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        display: none;
+        padding: 20px;
+    }
+
+    .progress-bar {
+        height: 6px;
+        background-color: var(--grey);
+        margin: 0 30px 20px;
+        border-radius: 3px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background-color: var(--teal);
+        transition: width 0.3s ease;
+        width: 10%;
+    }
+
+    .canvasCard {
+        width: 500px;
+        max-width: 100%;
+        overflow: hidden;
+        margin: 0 auto;
+    }
+
+    @media screen and (max-width: 800px) {
+        .question-columns {
+            grid-template-columns: 1fr;
+        }
+        .nav-button {
+            width: 35px;
+            height: 35px;
+            font-size: 14px;
+        }
+        .arrow-button {
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="quiz-container">
+        <nav class="navigation" aria-label="Quiz navigation">
+            <div class="nav-buttons" role="tablist">
+                <button class="nav-button active" onclick="goToSlide(1)" role="tab" aria-selected="true" aria-controls="slide-1" id="tab-1">1</button>
+                <button class="nav-button" onclick="goToSlide(2)" role="tab" aria-selected="false" aria-controls="slide-2" id="tab-2">2</button>
+                <button class="nav-button" onclick="goToSlide(3)" role="tab" aria-selected="false" aria-controls="slide-3" id="tab-3">3</button>
+                <button class="nav-button" onclick="goToSlide(4)" role="tab" aria-selected="false" aria-controls="slide-4" id="tab-4">4</button>
+                <button class="nav-button" onclick="goToSlide(5)" role="tab" aria-selected="false" aria-controls="slide-5" id="tab-5">5</button>
+                <button class="nav-button" onclick="goToSlide(6)" role="tab" aria-selected="false" aria-controls="slide-6" id="tab-6">6</button>
+            </div>
+        </nav>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" role="progressbar"></div>
+        </div>
+        <form name="quiz" onsubmit="return false" onchange="validateAllFields()">
+            <div class="slide-container" id="slideContainer">
+                <!-- Slide 1 -->
+                <fieldset class="slide active" id="slide-1">
+                    <legend>
+                        <h3>Dominant Characteristics</h3>
+                    </legend>
+                    <div class="question-columns">
+                        <div class="column">
+                            <h4>Now</h4>
+                            <div class="option-row">
+                                <label>A: The organization is a very personal place. It is like an extended family. 
+People seem to share a lot of themselves.</label>
+                                <input type="number" id="q1-a1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: The organization is a very dynamic entrepreneurial place. People are 
+willing to stick their necks out and take risks. </label>
+                                <input type="number" id="q1-b1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: The organization is very results oriented. A major concern is with 
+getting the job done. People are very competitive and achievement 
+oriented. </label>
+                                <input type="number" id="q1-c1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: The organization is a very controlled and structured place. Formal 
+procedures generally govern what people do.</label>
+                                <input type="number" id="q1-d1" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q1-total1">Total: 0/100</div>
+                        </div>
+                        <div class="column">
+                            <h4>Preferred</h4>
+                            <div class="option-row">
+                                <label>A: The leadership in the organization is generally considered to exemplify 
+mentoring, facilitating, or nurturing.</label>
+                                <input type="number" id="q1-a2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: The leadership in the organization is generally considered to exemplify 
+entrepreneurship, innovating, or risk taking.</label>
+                                <input type="number" id="q1-b2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: The leadership in the organization is generally considered to exemplify a 
+no-nonsense, aggressive, results-oriented focus.</label>
+                                <input type="number" id="q1-c2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: The leadership in the organization is generally considered to exemplify 
+coordinating, organizing, or smooth-running efficiency</label>
+                                <input type="number" id="q1-d2" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q1-total2">Total: 0/100</div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Slide 2 -->
+                <fieldset class="slide" id="slide-2">
+                    <legend>
+                        <h3>During meetings, you are most satisfied when:</h3>
+                    </legend>
+                    <div class="question-columns">
+                        <div class="column">
+                            <h4>Column 1</h4>
+                            <div class="option-row">
+                                <label>A: Clear decisions and action items</label>
+                                <input type="number" id="q2-a1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Information is thorough and reasoned</label>
+                                <input type="number" id="q2-b1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Everyone feels heard and respected</label>
+                                <input type="number" id="q2-c1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Weak arguments are challenged</label>
+                                <input type="number" id="q2-d1" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q2-total1">Total: 0/100</div>
+                        </div>
+                        <div class="column">
+                            <h4>Column 2</h4>
+                            <div class="option-row">
+                                <label>A: Clear decisions and action items</label>
+                                <input type="number" id="q2-a2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Information is thorough and reasoned</label>
+                                <input type="number" id="q2-b2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Everyone feels heard and respected</label>
+                                <input type="number" id="q2-c2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Weak arguments are challenged</label>
+                                <input type="number" id="q2-d2" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q2-total2">Total: 0/100</div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Slide 3 -->
+                <fieldset class="slide" id="slide-3">
+                    <legend>
+                        <h3>If a colleague is telling a long story, you tend to:</h3>
+                    </legend>
+                    <div class="question-columns">
+                        <div class="column">
+                            <h4>Column 1</h4>
+                            <div class="option-row">
+                                <label>A: Summarize into key points</label>
+                                <input type="number" id="q3-a1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Track sequence and details</label>
+                                <input type="number" id="q3-b1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Pay attention to emotions</label>
+                                <input type="number" id="q3-c1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Look for inconsistencies</label>
+                                <input type="number" id="q3-d1" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q3-total1">Total: 0/100</div>
+                        </div>
+                        <div class="column">
+                            <h4>Column 2</h4>
+                            <div class="option-row">
+                                <label>A: Summarize into key points</label>
+                                <input type="number" id="q3-a2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Track sequence and details</label>
+                                <input type="number" id="q3-b2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Pay attention to emotions</label>
+                                <input type="number" id="q3-c2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Look for inconsistencies</label>
+                                <input type="number" id="q3-d2" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q3-total2">Total: 0/100</div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Slide 4 -->
+                <fieldset class="slide" id="slide-4">
+                    <legend>
+                        <h3>When receiving instructions, you prefer them to be:</h3>
+                    </legend>
+                    <div class="question-columns">
+                        <div class="column">
+                            <h4>Column 1</h4>
+                            <div class="option-row">
+                                <label>A: Short and focused on results</label>
+                                <input type="number" id="q4-a1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Detailed and precise</label>
+                                <input type="number" id="q4-b1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Friendly and encouraging</label>
+                                <input type="number" id="q4-c1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Justified with evidence</label>
+                                <input type="number" id="q4-d1" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q4-total1">Total: 0/100</div>
+                        </div>
+                        <div class="column">
+                            <h4>Column 2</h4>
+                            <div class="option-row">
+                                <label>A: Short and focused on results</label>
+                                <input type="number" id="q4-a2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Detailed and precise</label>
+                                <input type="number" id="q4-b2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Friendly and encouraging</label>
+                                <input type="number" id="q4-c2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Justified with evidence</label>
+                                <input type="number" id="q4-d2" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q4-total2">Total: 0/100</div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Slide 5 -->
+                <fieldset class="slide" id="slide-5">
+                    <legend>
+                        <h3>If someone disagrees with you, your listening focus is on:</h3>
+                    </legend>
+                    <div class="question-columns">
+                        <div class="column">
+                            <h4>Column 1</h4>
+                            <div class="option-row">
+                                <label>A: Finding a practical way forward</label>
+                                <input type="number" id="q5-a1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Understanding the logic</label>
+                                <input type="number" id="q5-b1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Maintaining rapport</label>
+                                <input type="number" id="q5-c1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Evaluating their argument</label>
+                                <input type="number" id="q5-d1" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q5-total1">Total: 0/100</div>
+                        </div>
+                        <div class="column">
+                            <h4>Column 2</h4>
+                            <div class="option-row">
+                                <label>A: Finding a practical way forward</label>
+                                <input type="number" id="q5-a2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Understanding the logic</label>
+                                <input type="number" id="q5-b2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Maintaining rapport</label>
+                                <input type="number" id="q5-c2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Evaluating their argument</label>
+                                <input type="number" id="q5-d2" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q5-total2">Total: 0/100</div>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Slide 6 -->
+                <fieldset class="slide" id="slide-6">
+                    <legend>
+                        <h3>When listening to a presentation, you are most likely to:</h3>
+                    </legend>
+                    <div class="question-columns">
+                        <div class="column">
+                            <h4>Column 1</h4>
+                            <div class="option-row">
+                                <label>A: Think about implementation</label>
+                                <input type="number" id="q6-a1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Analyse data and explanations</label>
+                                <input type="number" id="q6-b1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Notice the speaker's engagement</label>
+                                <input type="number" id="q6-c1" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Assess credibility of claims</label>
+                                <input type="number" id="q6-d1" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q6-total1">Total: 0/100</div>
+                        </div>
+                        <div class="column">
+                            <h4>Column 2</h4>
+                            <div class="option-row">
+                                <label>A: Think about implementation</label>
+                                <input type="number" id="q6-a2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>B: Analyse data and explanations</label>
+                                <input type="number" id="q6-b2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>C: Notice the speaker's engagement</label>
+                                <input type="number" id="q6-c2" min="0" max="100" value="0">
+                            </div>
+                            <div class="option-row">
+                                <label>D: Assess credibility of claims</label>
+                                <input type="number" id="q6-d2" min="0" max="100" value="0">
+                            </div>
+                            <div class="column-total" id="q6-total2">Total: 0/100</div>
+                        </div>
+                    </div>
+                    <button class="submit-button" id="submitButton" onclick="submitQuiz();">Submit & View Results</button>
+                </fieldset>
+            </div>
+        </form>
+
+        <nav class="navigation">
+            <button class="arrow-button" id="prevBtn" onclick="previousSlide()">← Previous</button>
+            <button class="arrow-button" id="nextBtn" onclick="nextSlide()">Next →</button>
+        </nav>
+    </div>
+
+    <div id="results" role="region" aria-live="polite"></div>
+
+    <section class="canvasCard" id="chartContainer" style="display: none;">
+        <canvas id="communicationStyle" class="canvasGraph"></canvas>
+    </section>
+
+<script>
+let currentSlide = 1;
+const totalSlides = 6;
+let chart = null;
+
+function goToSlide(slideNumber) {
+    const slides = document.querySelectorAll('.slide');
+    slides.forEach(slide => slide.classList.remove('active'));
+    document.getElementById(`slide-${slideNumber}`).classList.add('active');
+    
+    currentSlide = slideNumber;
+    updateButtons();
+    updateArrowButtons();
+    updateProgressBar();
+}
+
+function nextSlide() {
+    if (currentSlide < totalSlides) goToSlide(currentSlide + 1);
+}
+
+function previousSlide() {
+    if (currentSlide > 1) goToSlide(currentSlide - 1);
+}
+
+function updateButtons() {
+    document.querySelectorAll('.nav-button').forEach((btn, index) => {
+        btn.classList.toggle('active', index === currentSlide - 1);
+    });
+}
+
+function updateArrowButtons() {
+    document.getElementById('prevBtn').disabled = currentSlide === 1;
+    document.getElementById('nextBtn').disabled = currentSlide === totalSlides;
+}
+
+function updateProgressBar() {
+    const progress = (currentSlide / totalSlides) * 100;
+    document.getElementById('progressFill').style.width = `${progress}%`;
+}
+
+function validateAllFields() {
+    for (let slide = 1; slide <= totalSlides; slide++) {
+        for (let col = 1; col <= 2; col++) {
+            const total = calculateColumnTotal(slide, col);
+            const totalElement = document.getElementById(`q${slide}-total${col}`);
+            const isValid = total === 100;
+            totalElement.textContent = `Total: ${total}/100`;
+            totalElement.classList.toggle('invalid', !isValid);
+        }
+    }
+}
+
+function calculateColumnTotal(slideNum, colNum) {
+    const a = parseInt(document.getElementById(`q${slideNum}-a${colNum}`).value) || 0;
+    const b = parseInt(document.getElementById(`q${slideNum}-b${colNum}`).value) || 0;
+    const c = parseInt(document.getElementById(`q${slideNum}-c${colNum}`).value) || 0;
+    const d = parseInt(document.getElementById(`q${slideNum}-d${colNum}`).value) || 0;
+    return a + b + c + d;
+}
+
+function submitQuiz() {
+    // Validate all columns sum to 100
+    let allValid = true;
+    for (let slide = 1; slide <= totalSlides; slide++) {
+        for (let col = 1; col <= 2; col++) {
+            if (calculateColumnTotal(slide, col) !== 100) {
+                allValid = false;
+            }
+        }
+    }
+    
+    if (!allValid) {
+        alert('Please ensure each column totals exactly 100 points across all questions.');
+        return;
+    }
+    
+    // Calculate averages for each option across both columns
+    const averages = { a: 0, b: 0, c: 0, d: 0 };
+    const col1Avgs = { a: 0, b: 0, c: 0, d: 0 };
+    const col2Avgs = { a: 0, b: 0, c: 0, d: 0 };
+    
+    // Sum all column 1 values
+    for (let slide = 1; slide <= totalSlides; slide++) {
+        col1Avgs.a += parseInt(document.getElementById(`q${slide}-a1`).value) || 0;
+        col1Avgs.b += parseInt(document.getElementById(`q${slide}-b1`).value) || 0;
+        col1Avgs.c += parseInt(document.getElementById(`q${slide}-c1`).value) || 0;
+        col1Avgs.d += parseInt(document.getElementById(`q${slide}-d1`).value) || 0;
+    }
+    
+    // Sum all column 2 values
+    for (let slide = 1; slide <= totalSlides; slide++) {
+        col2Avgs.a += parseInt(document.getElementById(`q${slide}-a2`).value) || 0;
+        col2Avgs.b += parseInt(document.getElementById(`q${slide}-b2`).value) || 0;
+        col2Avgs.c += parseInt(document.getElementById(`q${slide}-c2`).value) || 0;
+        col2Avgs.d += parseInt(document.getElementById(`q${slide}-d2`).value) || 0;
+    }
+    
+    // Average across 6 slides
+    col1Avgs.a /= totalSlides;
+    col1Avgs.b /= totalSlides;
+    col1Avgs.c /= totalSlides;
+    col1Avgs.d /= totalSlides;
+    
+    col2Avgs.a /= totalSlides;
+    col2Avgs.b /= totalSlides;
+    col2Avgs.c /= totalSlides;
+    col2Avgs.d /= totalSlides;
+    console.log()
+    
+    // Display chart
+    displayChart(col1Avgs, col2Avgs);
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('chartContainer').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    console.log(col1Avgs, col2Avgs, averages);
+}
+
+function displayChart(col1, col2) {
+    const ctx = document.getElementById('communicationStyle');
+    
+    if (chart) chart.destroy();
+    
+    chart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['A: Task-Oriented', 'B: Analytical', 'C: Relational', 'D: Critical'],
+            datasets: [
+                {
+                    label: 'Column 1',
+                    data: [col1.a, col1.b, col1.c, col1.d],
+                    borderColor: '#5DC8B9',
+                    backgroundColor: 'rgba(93, 200, 185, 0.2)',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Column 2',
+                    data: [col2.a, col2.b, col2.c, col2.d],
+                    borderColor: '#AF4510',
+                    backgroundColor: 'rgba(175, 69, 16, 0.2)',
+                    borderWidth: 2
+                }
+            ]
+        },
+        options: {
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 50,
+                    min: 0
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true
+                }
+            }
+        }
+    });
+}
+
+updateArrowButtons();
+updateProgressBar();
+</script>
+</body>
+</html>
