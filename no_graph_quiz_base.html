@@ -669,13 +669,42 @@ function submitQuiz() {
     col2Avgs.b /= totalSlides;
     col2Avgs.c /= totalSlides;
     col2Avgs.d /= totalSlides;
-    
+
     // Display chart
     displayChart(col1Avgs, col2Avgs);
     document.getElementById('results').style.display = 'block';
     document.getElementById('chartContainer').style.display = 'block';
     document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
     console.log(col1Avgs, col2Avgs, averages);
+
+    // Display results text
+    const resultsDiv = document.getElementById('results');
+    const resultsHTML = `
+        <h2>Your Culture Assessment Results</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+            <div>
+                <h3>Now (Current State)</h3>
+                <p><strong>A: Clan Culture</strong><br>Score: ${col1Avgs.a.toFixed(1)}/100</p>
+                <p><strong>B: Adhocracy Culture</strong><br>Score: ${col1Avgs.b.toFixed(1)}/100</p>
+                <p><strong>C: Market Culture</strong><br>Score: ${col1Avgs.c.toFixed(1)}/100</p>
+                <p><strong>D: Hierarchy Culture</strong><br>Score: ${col1Avgs.d.toFixed(1)}/100</p>
+            </div>
+            <div>
+                <h3>Preferred (Aspirational)</h3>
+                <p><strong>A: Clan Culture</strong><br>Score: ${col2Avgs.a.toFixed(1)}/100</p>
+                <p><strong>B: Adhocracy Culture</strong><br>Score: ${col2Avgs.b.toFixed(1)}/100</p>
+                <p><strong>C: Market Culture</strong><br>Score: ${col2Avgs.c.toFixed(1)}/100</p>
+                <p><strong>D: Hierarchy Culture</strong><br>Score: ${col2Avgs.d.toFixed(1)}/100</p>
+            </div>
+        </div>
+    `;
+    resultsDiv.innerHTML = resultsHTML;
+    resultsDiv.style.display = 'block';
+    
+    // Display chart
+    displayChart(col1Avgs, col2Avgs);
+    document.getElementById('chartContainer').style.display = 'block';
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
 }
 
 function displayChart(col1, col2) {
